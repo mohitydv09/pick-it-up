@@ -1,0 +1,3 @@
+[submodule "CAESAR-Simulator"]
+	path = CAESAR-Simulator
+	url = https://github.com/collaborative-robotics-lab-at-uva/CAESAR-Simulator.git
