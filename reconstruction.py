@@ -1,4 +1,5 @@
 import cv2
+import time
 import numpy as np
 import open3d as o3d
 import poseestimator
@@ -179,20 +180,20 @@ landmarks = poseestimator.translate_landmarks(landmarks, hip_position)
 ## Show the arrow from the human being.
 arrow = points_to_arrow(landmarks[12], landmarks[16])
 
-# ## Filter out points that are close to the line.
-# filtered_points = []
-# for image in [image_0, image_1, image_2, image_3, image_4, image_5]:
-#     for point in image.points:
-#         if get_distance_between_point_and_line(point, landmarks[12], landmarks[16]) < 0.2:
-#             filtered_points.append(point)
-# print("Number of points filtered: ", len(filtered_points))
+## Filter out points that are close to the line.
+filtered_points = []
+for image in [image_0, image_1, image_2, image_3, image_4, image_5]:
+    for point in image.points:
+        if get_distance_between_point_and_line(point, landmarks[12], landmarks[16]) < 0.2:
+            filtered_points.append(point)
+print("Number of points filtered: ", len(filtered_points))
 
-# ## Apply the filter for points to be outwards of endpoitns.
-# filtered_points = [point for point in filtered_points if points_away_from_points(point, landmarks[12], landmarks[16])]
+## Apply the filter for points to be outwards of endpoitns.
+filtered_points = [point for point in filtered_points if points_away_from_points(point, landmarks[12], landmarks[16])]
 
-# close_points = o3d.geometry.PointCloud()
-# close_points.points = o3d.utility.Vector3dVector(filtered_points)
-# close_points.paint_uniform_color([0, 1, 0])
+close_points = o3d.geometry.PointCloud()
+close_points.points = o3d.utility.Vector3dVector(filtered_points)
+close_points.paint_uniform_color([0, 1, 0])
 
 ## For showing the landmarks in big size.
 landmark_points = []
@@ -202,8 +203,52 @@ for landmark in landmarks:
     sphere.translate(landmark)
     landmark_points.append(sphere)
 
-geometries = [image_0, image_1, image_2, image_3, image_4, image_5, cube, coordinate_frame, arrow]#, close_points]
-geometries.extend(landmark_points)
+geometries = [image_0, image_1, image_2, image_3, image_4, image_5]
 
-o3d.visualization.draw_geometries(geometries, window_name='Open3D')
+start_time = time.time()
+
+landmark_added = False
+arrow_added = False
+
+def update_geometries(vis):
+    global landmark_added, arrow_added
+    current_time = time.time()
+    time_elapsed = current_time - start_time
+
+    if time_elapsed > 10:
+        return False
+
+    if time_elapsed > 4 and not landmark_added:
+        print("Landmarks added")
+        for point in landmark_points:
+            vis.add_geometry(point)
+        landmark_added = True
+
+    if time_elapsed > 6 and not arrow_added:
+        print("Arrow added")
+        vis.add_geometry(arrow)
+        arrow_added = True
+    
+    if time_elapsed > 8:
+        vis.add_geometry(close_points)
+
+    view_control = vis.get_view_control()
+    view_control.set_front([0, -0.1, 0])
+    view_control.set_lookat([0, 8, 0])
+    view_control.set_up([0, 0, 1])
+    view_control.set_zoom(0.5)
+
+    vis.update_renderer()
+    
+    return True
+
+vis = o3d.visualization.Visualizer()
+vis.create_window(window_name='Open3D')
+
+for geometry in geometries:
+    vis.add_geometry(geometry)
+
+vis.register_animation_callback(update_geometries)
+vis.run()
+vis.destroy_window()
 

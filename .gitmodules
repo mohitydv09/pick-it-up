@@ -1,3 +1,9 @@
 [submodule "CAESAR-Simulator"]
 	path = CAESAR-Simulator
 	url = https://github.com/collaborative-robotics-lab-at-uva/CAESAR-Simulator.git
+[submodule "YouRefIt_ERU"]
+	path = YouRefIt_ERU
+	url = https://github.com/yixchen/YouRefIt_ERU
+[submodule "myUtils"]
+	path = myUtils
+	url = https://github.com/mohitydv09/myUtils.git

@@ -23,6 +23,20 @@ def landmark_pointcloud_from_image(path:str):
 
         return np.array(landmark_points), hip_pixel
 
+def mediapipe_inference_on_image(color_image: np.array):
+    """This function takes in the path to the image and plots the mediapipe result."""
+    # color_image = np.load(path, allow_pickle=True)[:,:,:3].astype(np.uint8)
+    # color_image = color_image[:,:,::-1]
+
+    with mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5) as pose:
+        mp_result = pose.process(color_image)
+        # print("Detection confidence: ", mp_result.pose_detection_confidence)
+        
+        annotated_image = color_image.copy()
+        mp_drawing.draw_landmarks(annotated_image, mp_result.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
+    return annotated_image
+
 def get_hip_pixel(landmarks_2d: mp.solutions.pose.PoseLandmark, image_shape: tuple):
     left_hip_2d_landmark = landmarks_2d.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP]
     right_hip_2d_landmark = landmarks_2d.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_HIP]
