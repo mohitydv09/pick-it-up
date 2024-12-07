@@ -1,55 +1,30 @@
 import os
 import numpy as np
+import time
 from pynput import mouse
 from myUtils.RS import RealSenseCamera
 
+real_sense_camera = RealSenseCamera(visualization=True)
+real_sense_camera.start()
+
+objects = ['chair', 'wine_glass_top', 'wine_glass_bottom', 'cup', 'bottle', 'bowl', 'remote','bagpack']
+i = 7
+
+def on_click(x, y, button, pressed):
+    if pressed:
+        filename = f"scene1_{objects[i]}_{time.time()}"
+        real_sense_camera.save_current_rgbd_frame(os.path.join("data", filename))
+    else:
+        print("Mouse Released at ({0}, {1}) with {2}".format(x, y, button))
+
 def main():
-    pass
+    try:
+        while True:
+            with mouse.Listener(on_click=on_click) as listener:
+                listener.join()
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt Detected. Stopping the RealSense Camera.")
+        real_sense_camera.stop()
 
 if __name__ == "__main__":
-    # Initialize pygame
-    pygame.init()
-
-    # Set up the screen
-    # screen = pygame.display.set_mode((800, 600))  # Create a window of size 800x600
-    # pygame.display.set_caption("Mouse Click Example")
-
-    # Define colors
-    # WHITE = (255, 255, 255)
-    # RED = (255, 0, 0)
-
-    # Initial position and radius of a circle
-    # circle_pos = [400, 300]
-    # circle_radius = 50
-
-    # Main loop
-    running = True
-    while running:
-        for event in pygame.event.get():
-            # Check for quitting the window
-            if event.type == pygame.QUIT:
-                running = False
-            
-            # Check for mouse button clicks
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
-                    print("Left mouse button clicked at:", event.pos)
-                    circle_pos = list(event.pos)  # Move circle to the click position
-                elif event.button == 3:  # Right mouse button
-                    print("Right mouse button clicked at:", event.pos)
-                    circle_radius += 10  # Increase circle radius
-                elif event.button == 2:  # Middle mouse button
-                    print("Middle mouse button clicked at:", event.pos)
-                    circle_radius = max(10, circle_radius - 10)  # Decrease circle radius
-
-        # Clear screen
-        # screen.fill(WHITE)
-
-        # Draw a circle
-        # pygame.draw.circle(screen, RED, circle_pos, circle_radius)
-
-        # Update the display
-        # pygame.display.flip()
-
-    # Quit pygame
-    # pygame.quit()
+    main()
